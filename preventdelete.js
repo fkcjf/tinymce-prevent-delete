@@ -41,9 +41,9 @@
     this.nextElement = function (elem) {
       let $elem = $(elem)
       let next_sibling = $elem.next()
-      while (next_sibling.length == 0) {
+      while (next_sibling.length === 0) {
         $elem = $elem.parent()
-        if ($elem.attr('id') == self.root_id) { return false }
+        if ($elem.attr('id') === self.root_id) { return false }
 
         next_sibling = $elem.next()
       }
@@ -53,9 +53,9 @@
     this.prevElement = function (elem) {
       let $elem = $(elem)
       let prev_sibling = $elem.prev()
-      while (prev_sibling.length == 0) {
+      while (prev_sibling.length === 0) {
         $elem = $elem.parent()
-        if ($elem.attr('id') == self.root_id) { return false }
+        if ($elem.attr('id') === self.root_id) { return false }
 
         prev_sibling = $elem.prev()
       }
@@ -81,7 +81,7 @@
       const c = evt.keyCode
 
       // ctrl+x or ctrl+back/del will all delete, but otherwise it probably won't
-      if (evt.ctrlKey) { return evt.key == 'x' || [8, 46].contains(c) }
+      if (evt.ctrlKey) { return evt.key === 'x' || [8, 46].contains(c) }
 
       return [8, 9, 13, 46].contains(c) || r(c, 48, 57) || r(c, 65, 90) || r(c, 96, 111) || r(c, 186, 192) || r(c, 219, 222)
     }
@@ -128,8 +128,8 @@
 
       self.logElem(range.startContainer)
 
-      const back = evt.keyCode && evt.keyCode == 8
-      const del = evt.keyCode && evt.keyCode == 46
+      const back = evt.keyCode && evt.keyCode === 8
+      const del = evt.keyCode && evt.keyCode === 46
 
       let conNoEdit
 
