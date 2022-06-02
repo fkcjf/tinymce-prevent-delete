@@ -11,6 +11,7 @@
       return val >= min && val <= max
     }
     // Returns whether there is any non-space characters in the specified direction relative to the position
+    // eslint-disable-next-line no-unused-vars
     function hasText (str, pos, left) {
       // 160 is &nbsp, 32 is ' '
       left = left !== false
