@@ -1,8 +1,4 @@
 (function () {
-  Array.prototype.contains = function (e) {
-    return this.indexOf(e) > -1
-  }
-
   function PreventDelete () {
     const self = this
 
@@ -17,7 +13,7 @@
       left = left !== false
 
       for (let i = left ? pos - 1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
-        if ([160, 32].contains(str.charCodeAt(i))) { continue } else { return true }
+        if ([160, 32].includes(str.charCodeAt(i))) { continue } else { return true }
       }
       return false
     }
@@ -28,7 +24,7 @@
       left = left !== false
 
       for (let i = left ? pos - 1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
-        const isSpace = [160, 32].contains(str.charCodeAt(i))
+        const isSpace = [160, 32].includes(str.charCodeAt(i))
         if (!space && isSpace) { space = true } else if (!text && !isSpace) { text = true }
 
         if (space && text) { return true }
@@ -82,9 +78,9 @@
       const c = evt.keyCode
 
       // ctrl+x or ctrl+back/del will all delete, but otherwise it probably won't
-      if (evt.ctrlKey) { return evt.key === 'x' || [8, 46].contains(c) }
+      if (evt.ctrlKey) { return evt.key === 'x' || [8, 46].includes(c) }
 
-      return [8, 9, 13, 46].contains(c) || r(c, 48, 57) || r(c, 65, 90) || r(c, 96, 111) || r(c, 186, 192) || r(c, 219, 222)
+      return [8, 9, 13, 46].includes(c) || r(c, 48, 57) || r(c, 65, 90) || r(c, 96, 111) || r(c, 186, 192) || r(c, 219, 222)
     }
     this.cancelKey = function (evt) {
       evt.preventDefault()
@@ -227,5 +223,5 @@
     })
   })
 
-  new PreventDelete()
+  window.PreventDelete = new PreventDelete()
 })()
