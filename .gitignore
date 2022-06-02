@@ -1,3 +1,6 @@
+# IDE settings
+.idea/
+
 # node dependencies
 node_modules/
 
