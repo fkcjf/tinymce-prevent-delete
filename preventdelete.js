@@ -1,249 +1,230 @@
-(function() {
-	Array.prototype.contains = function (e) {
-		return this.indexOf(e) > -1
-	}
+(function () {
+  Array.prototype.contains = function (e) {
+    return this.indexOf(e) > -1
+  }
 
-	function PreventDelete() {
-		var self = this
+  function PreventDelete () {
+    const self = this
 
-		//Returns whether val is within the range specified by min/max
-		function r(val, min, max) {
-			return val >= min && val <= max
-		}
-		//Returns whether there is any non-space characters in the specified direction relative to the position
-		function hasText(str, pos, left) {
-			//160 is &nbsp, 32 is ' '
-			left = left === false ? false : true
+    // Returns whether val is within the range specified by min/max
+    function r (val, min, max) {
+      return val >= min && val <= max
+    }
+    // Returns whether there is any non-space characters in the specified direction relative to the position
+    function hasText (str, pos, left) {
+      // 160 is &nbsp, 32 is ' '
+      left = left !== false
 
-			for (var i = left ? pos-1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
-				if ([160, 32].contains(str.charCodeAt(i)))
-					continue
-				else
-					return true
-			}
-			return false
-		}
-		//This just returns true if there is relevant text that would stop ctrl back/del from propogating farther than this string
-		function hasStopText(str, pos, left) {
-			var text = false
-			var space = false
-			left = left === false ? false : true
+      for (let i = left ? pos - 1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
+        if ([160, 32].contains(str.charCodeAt(i))) { continue } else { return true }
+      }
+      return false
+    }
+    // This just returns true if there is relevant text that would stop ctrl back/del from propogating farther than this string
+    function hasStopText (str, pos, left) {
+      let text = false
+      let space = false
+      left = left !== false
 
-			for (var i = left ? pos-1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
-				var isSpace = [160, 32].contains(str.charCodeAt(i))
-				if (!space && isSpace)
-					space = true
-				else if (!text && !isSpace)
-					text = true
+      for (let i = left ? pos - 1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
+        const isSpace = [160, 32].contains(str.charCodeAt(i))
+        if (!space && isSpace) { space = true } else if (!text && !isSpace) { text = true }
 
-				if (space && text)
-					return true
-			}
-			return false
-		}
+        if (space && text) { return true }
+      }
+      return false
+    }
 
-		this.root_id = 'tinymce'
-		this.preventdelete_class = 'mceNonEditable'
+    this.root_id = 'tinymce'
+    this.preventdelete_class = 'mceNonEditable'
 
-		this.nextElement = function(elem) {
-			var $elem = $(elem)
-			var next_sibling = $elem.next()
-			while(next_sibling.length == 0){
-                $elem = $elem.parent()
-                if($elem.attr('id') == self.root_id)
-                	return false
+    this.nextElement = function (elem) {
+      let $elem = $(elem)
+      let next_sibling = $elem.next()
+      while (next_sibling.length == 0) {
+        $elem = $elem.parent()
+        if ($elem.attr('id') == self.root_id) { return false }
 
-                next_sibling = $elem.next()
-			}
+        next_sibling = $elem.next()
+      }
 
-			return next_sibling
-		}
-		this.prevElement = function(elem) {
-			var $elem = $(elem)
-			var prev_sibling = $elem.prev()
-			while(prev_sibling.length == 0){
-                $elem = $elem.parent()
-                if($elem.attr('id') == self.root_id)
-                	return false
+      return next_sibling
+    }
+    this.prevElement = function (elem) {
+      let $elem = $(elem)
+      let prev_sibling = $elem.prev()
+      while (prev_sibling.length == 0) {
+        $elem = $elem.parent()
+        if ($elem.attr('id') == self.root_id) { return false }
 
-                prev_sibling = $elem.prev()
-			}
+        prev_sibling = $elem.prev()
+      }
 
-			return prev_sibling
-		}
+      return prev_sibling
+    }
 
-		this.keyWillDelete = function(evt) {
-			/*
-			In trying to figure out how to detect if a key was relevant, I appended all the keycodes for keys on my keyboard that would "delete" selected text, and sorted.  Generated the range blow:
-			Deleting
-			8, 9, 13, 46, 48-57, 65-90, 96-111, 186-192, 219-222
+    this.keyWillDelete = function (evt) {
+      /*
+      In trying to figure out how to detect if a key was relevant, I appended all the keycodes for keys on my keyboard that would "delete" selected text, and sorted.  Generated the range blow:
+      Deleting
+      8, 9, 13, 46, 48-57, 65-90, 96-111, 186-192, 219-222
 
-			I did the same thign with keys that wouldn't and got these below
-			Not harmful
-			16-19, 27, 33-40, 45, 91-93, 112-123, 144
+      I did the same thign with keys that wouldn't and got these below
+      Not harmful
+      16-19, 27, 33-40, 45, 91-93, 112-123, 144
 
-			You should note, since it's onkeydown it doesn't change the code if you have alt or ctrl or something pressed.  It makes it fewer keycombos actually.
+      You should note, since it's onkeydown it doesn't change the code if you have alt or ctrl or something pressed.  It makes it fewer keycombos actually.
 
-			I'm pretty sure in these "deleting" keys will still "delete" if shift is held
-			*/
+      I'm pretty sure in these "deleting" keys will still "delete" if shift is held
+      */
 
-			var c = evt.keyCode
+      const c = evt.keyCode
 
-			//ctrl+x or ctrl+back/del will all delete, but otherwise it probably won't
-			if (evt.ctrlKey)
-				return evt.key == 'x' || [8, 46].contains(c)
+      // ctrl+x or ctrl+back/del will all delete, but otherwise it probably won't
+      if (evt.ctrlKey) { return evt.key == 'x' || [8, 46].contains(c) }
 
-			return [8, 9, 13, 46].contains(c) || r(c, 48, 57) || r(c, 65, 90) || r(c, 96, 111) || r(c, 186, 192) || r(c, 219, 222)
+      return [8, 9, 13, 46].contains(c) || r(c, 48, 57) || r(c, 65, 90) || r(c, 96, 111) || r(c, 186, 192) || r(c, 219, 222)
+    }
+    this.cancelKey = function (evt) {
+      evt.preventDefault()
+      evt.stopPropagation()
+      return false
+    }
+    this.check = function (node) {
+      return $(node).hasClass(self.preventdelete_class)
+    }
+    this.checkParents = function (node) {
+      if (!node) { return true }
 
-		}
-		this.cancelKey = function(evt) {
-			evt.preventDefault()
-			evt.stopPropagation()
-			return false
-		}
-		this.check = function(node) {
-			return $(node).hasClass(self.preventdelete_class)
-		}
-		this.checkParents = function(node) {
-			if (!node)
-				return true
+      return $(node).parents('.' + self.preventdelete_class).length > 0
+    }
+    this.checkChildren = function (node) {
+      if (!node) { return false }
 
-			return $(node).parents('.'+self.preventdelete_class).length > 0
-		}
-		this.checkChildren = function(node) {
-			if (!node)
-				return false
+      return $(node).find('.' + self.preventdelete_class).length > 0
+    }
 
-			return $(node).find('.'+self.preventdelete_class).length > 0
-		}
+    this.logElem = function (elem) {
+      const e = {}
 
-		this.logElem = function(elem) {
-			var e = {}
+      const keys = ['innerHTML', 'nodeName', 'nodeType', 'nextSibling', 'previousSibling', 'outerHTML', 'parentElement', 'data']
 
-			var keys = ['innerHTML', 'nodeName', 'nodeType', 'nextSibling', 'previousSibling', 'outerHTML', 'parentElement', 'data']
+      keys.forEach(
+        function (key) {
+          e[key] = elem[key]
+        }
+      )
+    }
 
-			keys.forEach(
-				function(key) {
-					e[key] = elem[key]
-				}
-			)
+    this.checkEvent = function (evt) {
+      if (evt.keyCode && !self.keyWillDelete(evt)) { return true }
 
-		}
-		
-		this.checkEvent = function(evt) {
+      const selected = tinymce.activeEditor.selection.getNode()
+      if (self.check(selected) || self.checkChildren(selected)) {
+        return self.cancelKey(evt)
+      }
 
-            if (evt.keyCode && !self.keyWillDelete(evt))
-                return true;
+      const range = tinymce.activeEditor.selection.getRng()
 
-            var selected = tinymce.activeEditor.selection.getNode();
-            if (self.check(selected) || self.checkChildren(selected)) {
-                return self.cancelKey(evt);
-            }
+      self.logElem(range.startContainer)
 
-            var range = tinymce.activeEditor.selection.getRng();
+      const back = evt.keyCode && evt.keyCode == 8
+      const del = evt.keyCode && evt.keyCode == 46
 
-            self.logElem(range.startContainer);
+      let conNoEdit
 
-            var back = evt.keyCode && evt.keyCode == 8;
-            var del = evt.keyCode && evt.keyCode == 46;
+      // Ensure nothing in the span between elems is noneditable
+      for (let c = range.startContainer; !conNoEdit && c; c = c.nextSibling) {
+        conNoEdit = conNoEdit || self.check(c)
 
-            var conNoEdit;
+        if (range.endContainer === c) {
+          break
+        }
+      }
 
-            //Ensure nothing in the span between elems is noneditable
-            for (var c = range.startContainer; !conNoEdit && c; c = c.nextSibling) {
-                conNoEdit = conNoEdit || self.check(c);
+      const end = range.endContainer
+      if (end && range.endOffset === 0 && (self.check(end) || self.checkChildren(end))) {
+        return self.cancelKey(evt)
+      }
 
-                if (range.endContainer === c) {
-                    break;
-                }
-            }
+      if (conNoEdit) {
+        return self.cancelKey(evt)
+      }
 
-            var end = range.endContainer;
-            if (end && range.endOffset === 0 && (self.check(end) || self.checkChildren(end))) {
-                return self.cancelKey(evt);
-            }
+      const endData = range.endContainer.data || ''
+      const zwnbsp = range.startContainer.data && range.startContainer.data.charCodeAt(0) === 65279
 
-            if (conNoEdit) {
-                return self.cancelKey(evt);
-            }
+      const delin = del && range.endContainer.data && (range.endOffset < endData.length) && !(zwnbsp && endData.length === 1)
+      const backin = back && range.startContainer.data && range.startOffset > zwnbsp
 
+      const noselection = range.startOffset === range.endOffset
 
-            var endData = range.endContainer.data || "";
-            var zwnbsp = range.startContainer.data && range.startContainer.data.charCodeAt(0) === 65279;
+      const ctrlDanger = evt.ctrlKey && (back || del) && !hasStopText(range.startContainer.data, range.startOffset, back)
 
-            var delin = del && range.endContainer.data && (range.endOffset < endData.length) && !(zwnbsp && endData.length === 1);
-            var backin = back && range.startContainer.data && range.startOffset > zwnbsp;
+      if (delin || backin) {
+        // Allow the delete
+        if (!ctrlDanger) {
+          return true
+        }
+      }
 
-            var noselection = range.startOffset === range.endOffset;
+      // If ctrl is a danger we need to skip this block and check the siblings which is done in the rest of this function
+      if (!ctrlDanger) {
+        if (del && noselection && (range.startOffset + 1) < range.endContainer.childElementCount) {
+          const elem = range.endContainer.childNodes[range.startOffset + 1]
+          return self.check(elem) ? self.cancelKey(evt) : true
+        }
 
-            var ctrlDanger = evt.ctrlKey && (back || del) && !hasStopText(range.startContainer.data, range.startOffset, back);
+        // The range is within this container
+        if (range.startOffset !== range.endOffset) {
+          // If this container is non-editable, cancel the event, otherwise allow the event
+          return conNoEdit ? self.cancelKey(evt) : true
+        }
+      }
 
-            if (delin || backin) {
-                //Allow the delete
-                if (!ctrlDanger) {
-                    return true;
-                }
-            }
+      // Keypress was del and will effect the next element
+      if (del) {
+        const next = self.nextElement(range.endContainer)
+        // No next element, so we don't need to delete anyway
+        if (!next) {
+          return self.cancelKey(evt)
+        }
 
-            // If ctrl is a danger we need to skip this block and check the siblings which is done in the rest of this function
-            if (!ctrlDanger) {
-                if (del && noselection && (range.startOffset + 1) < range.endContainer.childElementCount) {
-                    var elem = range.endContainer.childNodes[range.startOffset + 1];
-                    return self.check(elem) ? self.cancelKey(evt) : true;
-                }
+        if (self.check(next) || self.checkChildren(next)) {
+          return self.cancelKey(evt)
+        }
+      }
+      // Keypress was back and will effect the previouselement
+      if (back) {
+        const prev = self.prevElement(range.startContainer)
+        if (self.check(prev)) { return self.cancelKey(evt) }
 
-                //The range is within this container
-                if (range.startOffset !== range.endOffset) {
+        if (range.startContainer === range.endContainer) {
+          if (typeof (prev.prevObject[0].className) !== undefined) {
+            if (prev.prevObject[0].className === 'mceEditable') { return self.cancelKey(evt) }
+          }
+        }
+      }
 
-                    //If this container is non-editable, cancel the event, otherwise allow the event
-                    return conNoEdit ? self.cancelKey(evt) : true;
-                }
-            }
+      if (self.check(prev)) {
+        return self.cancelKey(evt)
+      }
+    }
+  }
 
-            //Keypress was del and will effect the next element
-            if (del) {
-                var next = self.nextElement(range.endContainer);
-                //No next element, so we don't need to delete anyway
-                if (!next) {
-                    return self.cancelKey(evt);
-                }
+  tinymce.PluginManager.add('preventdelete', function (ed, link) {
+    ed.on('keydown', self.checkEvent)
+    ed.on('BeforeExecCommand', function (e) {
+      if (e.command === 'Cut' || e.command === 'Delete' || e.command === 'Paste') {
+        return self.checkEvent(e)
+      }
 
-                if (self.check(next) || self.checkChildren(next)) {
-                    return self.cancelKey(evt);
-                }
-            }
-            //Keypress was back and will effect the previouselement
-            if (back) {
-                var prev = self.prevElement(range.startContainer);
-					if (self.check(prev))
-						return self.cancelKey(evt)
-					
-					if(range.startContainer === range.endContainer)
-						if(typeof(prev.prevObject[0].className) !== undefined) 
-							if(prev.prevObject[0].className === 'mceEditable')
-								return self.cancelKey(evt)					
-				}
+      return true
+    })
+    ed.on('BeforeSetContent', function (e) {
+      return self.checkEvent(e)
+    })
+  })
 
-                if (self.check(prev)) {
-                    return self.cancelKey(evt);
-                }
-            }
-
-        };
-
-		tinymce.PluginManager.add('preventdelete', function(ed, link) {
-			ed.on('keydown', self.checkEvent);
-            		ed.on('BeforeExecCommand', function(e) {
-                		if (e.command === 'Cut' || e.command === 'Delete' || e.command === 'Paste') {
-                    		return self.checkEvent(e);
-                		}
-		
-		                return true;
-            		});
-            		ed.on('BeforeSetContent', function(e) {
-                		return self.checkEvent(e);
-            		});
-		})
-	}
-	new PreventDelete()
+  new PreventDelete()
 })()
