@@ -40,27 +40,27 @@
 
     this.nextElement = function (elem) {
       let $elem = $(elem)
-      let next_sibling = $elem.next()
-      while (next_sibling.length === 0) {
+      let nextSibling = $elem.next()
+      while (nextSibling.length === 0) {
         $elem = $elem.parent()
         if ($elem.attr('id') === self.root_id) { return false }
 
-        next_sibling = $elem.next()
+        nextSibling = $elem.next()
       }
 
-      return next_sibling
+      return nextSibling
     }
     this.prevElement = function (elem) {
       let $elem = $(elem)
-      let prev_sibling = $elem.prev()
-      while (prev_sibling.length === 0) {
+      let prevSibling = $elem.prev()
+      while (prevSibling.length === 0) {
         $elem = $elem.parent()
         if ($elem.attr('id') === self.root_id) { return false }
 
-        prev_sibling = $elem.prev()
+        prevSibling = $elem.prev()
       }
 
-      return prev_sibling
+      return prevSibling
     }
 
     this.keyWillDelete = function (evt) {
