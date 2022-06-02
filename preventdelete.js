@@ -205,10 +205,10 @@
             if (prev.prevObject[0].className === 'mceEditable') { return self.cancelKey(evt) }
           }
         }
-      }
 
-      if (self.check(prev)) {
-        return self.cancelKey(evt)
+        if (self.check(prev)) {
+          return self.cancelKey(evt)
+        }
       }
     }
   }
