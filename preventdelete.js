@@ -105,12 +105,13 @@
       const e = {}
 
       const keys = ['innerHTML', 'nodeName', 'nodeType', 'nextSibling', 'previousSibling', 'outerHTML', 'parentElement', 'data']
-
       keys.forEach(
         function (key) {
           e[key] = elem[key]
         }
       )
+
+      console.log(e)
     }
 
     this.checkEvent = function (evt) {
@@ -123,7 +124,9 @@
 
       const range = tinymce.activeEditor.selection.getRng()
 
+      /*
       self.logElem(range.startContainer)
+      */
 
       const back = evt.keyCode && evt.keyCode === 8
       const del = evt.keyCode && evt.keyCode === 46
