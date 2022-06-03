@@ -1,6 +1,9 @@
 (function (tinymce) {
-  function PreventDelete () {
+  function PreventDelete (editor) {
     const self = this
+
+    this.root_id = editor.id
+    this.preventdelete_class = editor.getParam('noneditable_class')
 
     // Returns whether val is within the range specified by min/max
     function r (val, min, max) {
@@ -31,9 +34,6 @@
       }
       return false
     }
-
-    this.root_id = 'tinymce'
-    this.preventdelete_class = 'mceNonEditable'
 
     this.nextElement = function (elem) {
       let nextSibling = elem.nextSibling
@@ -140,12 +140,12 @@
     this.checkEvent = function (evt) {
       if (evt.keyCode && !self.keyWillDelete(evt)) { return true }
 
-      const selected = tinymce.activeEditor.selection.getNode()
+      const selected = editor.selection.getNode()
       if (self.check(selected) || self.checkChildren(selected)) {
         return self.cancelKey(evt)
       }
 
-      const range = tinymce.activeEditor.selection.getRng()
+      const range = editor.selection.getRng()
 
       /*
       self.logElem(range.startContainer)
@@ -236,7 +236,7 @@
   }
 
   tinymce.PluginManager.add('preventdelete', function (ed, link) {
-    const preventDelete = new PreventDelete()
+    const preventDelete = new PreventDelete(ed)
     ed.on('keydown', preventDelete.checkEvent)
     ed.on('BeforeExecCommand', function (e) {
       if (e.command === 'Cut' || e.command === 'Delete' || e.command === 'Paste') {
