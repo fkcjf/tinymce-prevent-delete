@@ -1,4 +1,4 @@
-(function () {
+(function (tinymce) {
   function PreventDelete () {
     const self = this
 
@@ -250,4 +250,4 @@
     })
     */
   })
-})()
+})(tinymce) // eslint-disable-line no-undef
