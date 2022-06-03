@@ -221,8 +221,10 @@
       }
       return true
     })
+    /*
     ed.on('BeforeSetContent', function (e) {
       return preventDelete.checkEvent(e)
     })
+    */
   })
 })()
