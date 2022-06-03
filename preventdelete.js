@@ -207,21 +207,20 @@
         }
       }
     }
+
+    tinymce.PluginManager.add('preventdelete', function (ed, link) {
+      ed.on('keydown', self.checkEvent)
+      ed.on('BeforeExecCommand', function (e) {
+        if (e.command === 'Cut' || e.command === 'Delete' || e.command === 'Paste') {
+          return self.checkEvent(e)
+        }
+        return true
+      })
+      ed.on('BeforeSetContent', function (e) {
+        return self.checkEvent(e)
+      })
+    })
   }
 
-  tinymce.PluginManager.add('preventdelete', function (ed, link) {
-    ed.on('keydown', self.checkEvent)
-    ed.on('BeforeExecCommand', function (e) {
-      if (e.command === 'Cut' || e.command === 'Delete' || e.command === 'Paste') {
-        return self.checkEvent(e)
-      }
-
-      return true
-    })
-    ed.on('BeforeSetContent', function (e) {
-      return self.checkEvent(e)
-    })
-  })
-
-  window.PreventDelete = new PreventDelete()
+  new PreventDelete()
 })()
