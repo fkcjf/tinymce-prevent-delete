@@ -36,25 +36,23 @@
     this.preventdelete_class = 'mceNonEditable'
 
     this.nextElement = function (elem) {
-      let $elem = $(elem)
-      let nextSibling = $elem.next()
+      let nextSibling = elem.nextSibling
       while (nextSibling.length === 0) {
-        $elem = $elem.parent()
-        if ($elem.attr('id') === self.root_id) { return false }
+        elem = elem.parentElement
+        if (elem.getAttributeNode('id').value === self.root_id) { return false }
 
-        nextSibling = $elem.next()
+        nextSibling = elem.nextSibling
       }
 
       return nextSibling
     }
     this.prevElement = function (elem) {
-      let $elem = $(elem)
-      let prevSibling = $elem.prev()
+      let prevSibling = elem.previousSibling
       while (prevSibling.length === 0) {
-        $elem = $elem.parent()
-        if ($elem.attr('id') === self.root_id) { return false }
+        elem = elem.parentElement
+        if (elem.getAttributeNode('id').value === self.root_id) { return false }
 
-        prevSibling = $elem.prev()
+        prevSibling = elem.previousSibling
       }
 
       return prevSibling
@@ -88,17 +86,42 @@
       return false
     }
     this.check = function (node) {
-      return $(node).hasClass(self.preventdelete_class)
+      const classList = node.classList ?? null
+      if (classList === null) {
+        return false
+      } else {
+        return classList.contains(self.preventdelete_class)
+      }
+    }
+    this.nodeParentArray = function (node) {
+      const parents = []
+      if (!!node && !!node.parentElement) {
+        let parent = node.parentElement
+        while (parent !== null) {
+          parents.push(node)
+          node = parent
+          parent = node.parentElement
+        }
+      }
+      return parents
+    }
+    this.querySelectorFrom = function (selector, elements) {
+      return [].filter.call(elements, function (element) {
+        return element.matches(selector)
+      })
     }
     this.checkParents = function (node) {
       if (!node) { return true }
 
-      return $(node).parents('.' + self.preventdelete_class).length > 0
+      const nodeParents = self.nodeParentArray(node)
+      const filteredParents = self.querySelectorFrom('.' + self.preventdelete_class, nodeParents)
+      return (filteredParents.length > 0)
     }
     this.checkChildren = function (node) {
       if (!node) { return false }
 
-      return $(node).find('.' + self.preventdelete_class).length > 0
+      const filteredChildren = node.querySelectorAll('.' + self.preventdelete_class)
+      return (filteredChildren.length > 0)
     }
 
     this.logElem = function (elem) {
