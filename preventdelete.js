@@ -1,9 +1,32 @@
 (function (tinymce) {
   function PreventDelete (editor) {
     const self = this
+    const rootId = editor.id
+    const userAgentCanLog = typeof console !== 'undefined' && typeof console.log !== 'undefined'
+    const logDebug = userAgentCanLog && Boolean(editor.getParam('preventdelete_logDebug'))
+    const checkChildren = Boolean(editor.getParam('preventdelete_checkChildren'))
+    const checkParents = Boolean(editor.getParam('preventdelete_checkParents'))
+    const preventDeleteClass = editor.getParam('noneditable_class')
 
-    this.root_id = editor.id
-    this.preventdelete_class = editor.getParam('noneditable_class')
+    const deletingKeyCodes = [
+      'Backspace',
+      'Delete'
+    ]
+
+    const keysDeletingWithCtrl = [
+      'x'
+    ]
+
+    const logElemProperties = [
+      'innerHTML',
+      'nodeName',
+      'nodeType',
+      'nextSibling',
+      'previousSibling',
+      'outerHTML',
+      'parentElement',
+      'data'
+    ]
 
     // Returns whether val is within the range specified by min/max
     function inRange (val, min, max) {
@@ -14,7 +37,7 @@
     // eslint-disable-next-line no-unused-vars
     function hasText (str, pos, left) {
       // 160 is &nbsp, 32 is ' '
-      left = left !== false
+      left = Boolean(left)
 
       for (let i = left ? pos - 1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
         if ([160, 32].includes(str.charCodeAt(i))) { continue } else { return true }
@@ -41,7 +64,7 @@
       let nextSibling = elem.nextSibling
       while (nextSibling.length === 0) {
         elem = elem.parentElement
-        if (elem.getAttributeNode('id').value === self.root_id) { return false }
+        if (elem.getAttributeNode('id').value === rootId) { return false }
 
         nextSibling = elem.nextSibling
       }
@@ -53,7 +76,7 @@
       let prevSibling = elem.previousSibling
       while (prevSibling.length === 0) {
         elem = elem.parentElement
-        if (elem.getAttributeNode('id').value === self.root_id) { return false }
+        if (elem.getAttributeNode('id').value === rootId) { return false }
 
         prevSibling = elem.previousSibling
       }
@@ -95,7 +118,7 @@
       if (classList === null) {
         return false
       } else {
-        return classList.contains(self.preventdelete_class)
+        return classList.contains(preventDeleteClass)
       }
     }
 
@@ -119,38 +142,39 @@
     }
 
     this.checkParents = function (node) {
-      if (!node) { return true }
+      if (!node) return false
+      if (checkParents === false) return false
 
       const nodeParents = self.nodeParentArray(node)
-      const filteredParents = self.querySelectorFrom('.' + self.preventdelete_class, nodeParents)
+      const filteredParents = self.querySelectorFrom('.' + preventDeleteClass, nodeParents)
       return (filteredParents.length > 0)
     }
 
     this.checkChildren = function (node) {
-      if (!node) { return false }
+      if (!node) return false
+      if (checkChildren === false) return false
 
-      const filteredChildren = node.querySelectorAll('.' + self.preventdelete_class)
+      const filteredChildren = node.querySelectorAll('.' + preventDeleteClass)
       return (filteredChildren.length > 0)
     }
 
     this.logElem = function (elem) {
       const e = {}
 
-      const keys = ['innerHTML', 'nodeName', 'nodeType', 'nextSibling', 'previousSibling', 'outerHTML', 'parentElement', 'data']
-      keys.forEach(
-        function (key) {
-          e[key] = elem[key]
+      logElemProperties.forEach(
+        function (property) {
+          e[property] = elem[property]
         }
       )
 
-      console.log(e)
+      if (logDebug) console.log(e)
     }
 
     this.checkEvent = function (evt) {
       if (evt.keyCode && !self.keyWillDelete(evt)) { return true }
 
       const selected = editor.selection.getNode()
-      if (self.check(selected) || self.checkChildren(selected)) {
+      if (self.check(selected) || self.checkChildren(selected) || self.checkParents(selected)) {
         return self.cancelKey(evt)
       }
 
@@ -175,7 +199,7 @@
       }
 
       const end = range.endContainer
-      if (end && range.endOffset === 0 && (self.check(end) || self.checkChildren(end))) {
+      if (end && range.endOffset === 0 && (self.check(end) || self.checkChildren(end) || self.checkParents(end))) {
         return self.cancelKey(evt)
       }
 
