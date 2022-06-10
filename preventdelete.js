@@ -85,26 +85,23 @@
     }
 
     this.keyWillDelete = function (evt) {
-      /*
-      In trying to figure out how to detect if a key was relevant, I appended all the keycodes for keys on my keyboard that would "delete" selected text, and sorted.  Generated the range blow:
-      Deleting
-      8, 9, 13, 46, 48-57, 65-90, 96-111, 186-192, 219-222
+      const key = evt.key
+      const code = evt.code
+      const isCtrl = evt.ctrlKey
+      let ret = false
 
-      I did the same thign with keys that wouldn't and got these below
-      Not harmful
-      16-19, 27, 33-40, 45, 91-93, 112-123, 144
+      // Ignore single Ctrl presses
+      if (key !== 'Control') {
+        if (isCtrl) {
+          ret = (keysDeletingWithCtrl.includes(key) || deletingKeyCodes.includes(code))
+        } else {
+          ret = deletingKeyCodes.includes(code)
+        }
 
-      You should note, since it's onkeydown it doesn't change the code if you have alt or ctrl or something pressed.  It makes it fewer keycombos actually.
+        if (logDebug) console.log('keyWillDelete', ret, 'code=' + code, 'key=' + key, isCtrl ? 'ctrl=true' : 'ctrl=false')
+      }
 
-      I'm pretty sure in these "deleting" keys will still "delete" if shift is held
-      */
-
-      const c = evt.keyCode
-
-      // ctrl+x or ctrl+back/del will all delete, but otherwise it probably won't
-      if (evt.ctrlKey) { return evt.key === 'x' || [8, 46].includes(c) }
-
-      return [8, 9, 13, 46].includes(c) || inRange(c, 48, 57) || inRange(c, 65, 90) || inRange(c, 96, 111) || inRange(c, 186, 192) || inRange(c, 219, 222)
+      return ret
     }
 
     this.cancelKey = function (evt) {
@@ -171,7 +168,12 @@
     }
 
     this.checkEvent = function (evt) {
-      if (evt.keyCode && !self.keyWillDelete(evt)) { return true }
+      /**
+       * Skip if the event is a keypress that doesn't delete
+       */
+      if (!self.keyWillDelete(evt)) {
+        return true
+      }
 
       const selected = editor.selection.getNode()
       if (self.check(selected) || self.checkChildren(selected) || self.checkParents(selected)) {
@@ -179,13 +181,14 @@
       }
 
       const range = editor.selection.getRng()
+      if (logDebug) console.log('range', range)
 
       /*
       self.logElem(range.startContainer)
       */
 
-      const back = evt.keyCode && evt.keyCode === 8
-      const del = evt.keyCode && evt.keyCode === 46
+      const back = evt.code && evt.code === 'Backsapce'
+      const del = evt.code && evt.code === 'Delete'
 
       let conNoEdit
 
