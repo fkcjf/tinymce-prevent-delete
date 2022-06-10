@@ -45,7 +45,7 @@
       return false
     }
 
-    // This just returns true if there is relevant text that would stop ctrl back/del from propogating farther than this string
+    // This just returns true if there is relevant text that would stop ctrl back/del from propagating farther than this string
     function hasStopText (str, pos, left) {
       let text = false
       let space = false
@@ -203,24 +203,29 @@
       const back = evt.code && evt.code === 'Backspace'
       const del = evt.code && evt.code === 'Delete'
 
+      const noselection = range.collapsed // range.startOffset === range.endOffset
+
       let conNoEdit
+      if (!noselection) {
+        // Ensure nothing in the span between elems is noneditable
+        for (let c = range.startContainer; !conNoEdit && c; c = c.nextSibling) {
+          conNoEdit = conNoEdit || self.check(c)
 
-      // Ensure nothing in the span between elems is noneditable
-      for (let c = range.startContainer; !conNoEdit && c; c = c.nextSibling) {
-        conNoEdit = conNoEdit || self.check(c)
-
-        if (range.endContainer === c) {
-          break
+          if (range.endContainer === c) {
+            break
+          }
         }
-      }
 
-      const end = range.endContainer
-      if (end && range.endOffset === 0 && (self.check(end) || self.checkChildren(end) || self.checkParents(end))) {
-        return self.cancelKey(evt)
-      }
+        const end = range.endContainer
+        if (end && range.endOffset === 0 && (self.check(end) || self.checkChildren(end) || self.checkParents(end))) {
+          if (logDebug) console.log('range.endContainer', range.endContainer)
+          return self.cancelKey(evt)
+        }
 
-      if (conNoEdit) {
-        return self.cancelKey(evt)
+        if (conNoEdit) {
+          if (logDebug) console.log('conNoEdit', conNoEdit)
+          return self.cancelKey(evt)
+        }
       }
 
       const endData = range.endContainer.data || ''
@@ -228,8 +233,6 @@
 
       const delin = del && range.endContainer.data && (range.endOffset < endData.length) && !(zwnbsp && endData.length === 1)
       const backin = back && range.startContainer.data && range.startOffset > zwnbsp
-
-      const noselection = range.startOffset === range.endOffset
 
       const ctrlDanger = evt.ctrlKey && (back || del) && !hasStopText(range.startContainer.data, range.startOffset, back)
 
@@ -244,40 +247,59 @@
       if (!ctrlDanger) {
         if (del && noselection && (range.startOffset + 1) < range.endContainer.childElementCount) {
           const elem = range.endContainer.childNodes[range.startOffset + 1]
-          return self.check(elem) ? self.cancelKey(evt) : true
+          if (self.check(elem)) {
+            if (logDebug) console.log('')
+            return self.cancelKey(evt)
+          } else {
+            return true
+          }
         }
 
         // The range is within this container
-        if (range.startOffset !== range.endOffset) {
+        if (!range.collapsed) {
           // If this container is non-editable, cancel the event, otherwise allow the event
-          return conNoEdit ? self.cancelKey(evt) : true
+          if (conNoEdit) {
+            if (logDebug) console.log('')
+            return self.cancelKey(evt)
+          } else {
+            return true
+          }
         }
       }
 
-      // Keypress was del and will effect the next element
+      // Keypress was del and will affect the next element
       if (del) {
         const next = self.nextElement(range.endContainer)
         // No next element, so we don't need to delete anyway
         if (!next) {
+          if (logDebug) console.log('delete key, but no next element is present')
           return self.cancelKey(evt)
         }
 
         if (self.check(next) || self.checkChildren(next)) {
+          if (logDebug) console.log('delete key affects next element')
           return self.cancelKey(evt)
         }
       }
-      // Keypress was back and will effect the previouselement
+      // Keypress was back and will affect the previouselement
       if (back) {
         const prev = self.prevElement(range.startContainer)
-        if (self.check(prev)) { return self.cancelKey(evt) }
+        if (self.check(prev)) {
+          if (logDebug) console.log('backspace key affects previous element')
+          return self.cancelKey(evt)
+        }
 
-        if (range.startContainer === range.endContainer) {
+        if (range.collapsed) {
           if (typeof prev.prevObject[0].className !== 'undefined') {
-            if (prev.prevObject[0].className === 'mceEditable') { return self.cancelKey(evt) }
+            if (prev.prevObject[0].className === 'mceEditable') {
+              if (logDebug) console.log('range is empty, previous element has mceEditable class')
+              return self.cancelKey(evt)
+            }
           }
         }
 
         if (self.check(prev)) {
+          if (logDebug) console.log('')
           return self.cancelKey(evt)
         }
       }
