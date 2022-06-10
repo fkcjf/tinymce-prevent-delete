@@ -9,6 +9,7 @@
     function r (val, min, max) {
       return val >= min && val <= max
     }
+
     // Returns whether there is any non-space characters in the specified direction relative to the position
     // eslint-disable-next-line no-unused-vars
     function hasText (str, pos, left) {
@@ -20,6 +21,7 @@
       }
       return false
     }
+
     // This just returns true if there is relevant text that would stop ctrl back/del from propogating farther than this string
     function hasStopText (str, pos, left) {
       let text = false
@@ -46,6 +48,7 @@
 
       return nextSibling
     }
+
     this.prevElement = function (elem) {
       let prevSibling = elem.previousSibling
       while (prevSibling.length === 0) {
@@ -80,11 +83,13 @@
 
       return [8, 9, 13, 46].includes(c) || r(c, 48, 57) || r(c, 65, 90) || r(c, 96, 111) || r(c, 186, 192) || r(c, 219, 222)
     }
+
     this.cancelKey = function (evt) {
       evt.preventDefault()
       evt.stopPropagation()
       return false
     }
+
     this.check = function (node) {
       const classList = node.classList ?? null
       if (classList === null) {
@@ -93,6 +98,7 @@
         return classList.contains(self.preventdelete_class)
       }
     }
+
     this.nodeParentArray = function (node) {
       const parents = []
       if (!!node && !!node.parentElement) {
@@ -105,11 +111,13 @@
       }
       return parents
     }
+
     this.querySelectorFrom = function (selector, elements) {
       return [].filter.call(elements, function (element) {
         return element.matches(selector)
       })
     }
+
     this.checkParents = function (node) {
       if (!node) { return true }
 
@@ -117,6 +125,7 @@
       const filteredParents = self.querySelectorFrom('.' + self.preventdelete_class, nodeParents)
       return (filteredParents.length > 0)
     }
+
     this.checkChildren = function (node) {
       if (!node) { return false }
 
