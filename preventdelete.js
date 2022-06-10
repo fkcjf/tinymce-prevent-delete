@@ -6,7 +6,7 @@
     this.preventdelete_class = editor.getParam('noneditable_class')
 
     // Returns whether val is within the range specified by min/max
-    function r (val, min, max) {
+    function inRange (val, min, max) {
       return val >= min && val <= max
     }
 
@@ -81,7 +81,7 @@
       // ctrl+x or ctrl+back/del will all delete, but otherwise it probably won't
       if (evt.ctrlKey) { return evt.key === 'x' || [8, 46].includes(c) }
 
-      return [8, 9, 13, 46].includes(c) || r(c, 48, 57) || r(c, 65, 90) || r(c, 96, 111) || r(c, 186, 192) || r(c, 219, 222)
+      return [8, 9, 13, 46].includes(c) || inRange(c, 48, 57) || inRange(c, 65, 90) || inRange(c, 96, 111) || inRange(c, 186, 192) || inRange(c, 219, 222)
     }
 
     this.cancelKey = function (evt) {
