@@ -200,7 +200,7 @@
       self.logElem(range.startContainer)
       */
 
-      const back = evt.code && evt.code === 'Backsapce'
+      const back = evt.code && evt.code === 'Backspace'
       const del = evt.code && evt.code === 'Delete'
 
       let conNoEdit
