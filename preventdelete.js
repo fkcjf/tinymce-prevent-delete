@@ -4,8 +4,8 @@
     const rootId = editor.id
     const userAgentCanLog = typeof console !== 'undefined' && typeof console.log !== 'undefined'
     const logDebug = userAgentCanLog && Boolean(editor.getParam('preventdelete_logDebug'))
-    const checkChildren = Boolean(editor.getParam('preventdelete_checkChildren'))
-    const checkParents = Boolean(editor.getParam('preventdelete_checkParents'))
+    const lockChildren = Boolean(editor.getParam('preventdelete_lockChildren'))
+    const lockParents = Boolean(editor.getParam('preventdelete_lockParents'))
     const preventDeleteClass = editor.getParam('noneditable_class')
 
     const deletingKeyCodes = [
@@ -140,7 +140,6 @@
 
     this.checkParents = function (node) {
       if (!node) return false
-      if (checkParents === false) return false
 
       const nodeParents = self.nodeParentArray(node)
       const filteredParents = self.querySelectorFrom('.' + preventDeleteClass, nodeParents)
@@ -149,7 +148,6 @@
 
     this.checkChildren = function (node) {
       if (!node) return false
-      if (checkChildren === false) return false
 
       const filteredChildren = node.querySelectorAll('.' + preventDeleteClass)
       return (filteredChildren.length > 0)
@@ -175,8 +173,23 @@
         return true
       }
 
+      /**
+       * Check selection node for preventDelete class,
+       * check the selection node's children if the option lockParents is set,
+       * check the selection node's parents if the option lockChildren is set.
+       * (This last option is probably redundant as it is probably already covered by the first.)
+       */
       const selected = editor.selection.getNode()
-      if (self.check(selected) || self.checkChildren(selected) || self.checkParents(selected)) {
+      const checkConditions = {
+        check: self.check(selected),
+        checkChildren: (lockParents === false) ? false : self.checkChildren(selected),
+        checkParents: (lockChildren === false) ? false : self.checkParents(selected)
+      }
+      const checkResult = (checkConditions.check || checkConditions.checkChildren || checkConditions.checkParents)
+      if (logDebug) console.log('check', selected, checkResult, checkConditions)
+
+      if (checkResult) {
+        if (logDebug) console.log('selection node preventDelete class match')
         return self.cancelKey(evt)
       }
 
