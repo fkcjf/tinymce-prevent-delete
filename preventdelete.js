@@ -8,6 +8,8 @@
     const lockParents = Boolean(editor.getParam('preventdelete_lockParents'))
     const preventDeleteClass = editor.getParam('noneditable_class')
 
+    const spaceCharCodes = [160, 32]
+
     const deletingKeyCodes = [
       'Backspace',
       'Delete'
@@ -36,11 +38,10 @@
     // Returns whether there is any non-space characters in the specified direction relative to the position
     // eslint-disable-next-line no-unused-vars
     function hasText (str, pos, left) {
-      // 160 is &nbsp, 32 is ' '
       left = Boolean(left)
 
       for (let i = left ? pos - 1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
-        if ([160, 32].includes(str.charCodeAt(i))) { continue } else { return true }
+        if (spaceCharCodes.includes(str.charCodeAt(i))) { continue } else { return true }
       }
       return false
     }
@@ -52,7 +53,7 @@
       left = left !== false
 
       for (let i = left ? pos - 1 : pos; left ? i > 0 : i < str.length; left ? i-- : i++) {
-        const isSpace = [160, 32].includes(str.charCodeAt(i))
+        const isSpace = spaceCharCodes.includes(str.charCodeAt(i))
         if (!space && isSpace) { space = true } else if (!text && !isSpace) { text = true }
 
         if (space && text) { return true }
