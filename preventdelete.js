@@ -311,7 +311,7 @@
     const preventDelete = new PreventDelete(ed)
     ed.on('keydown', preventDelete.checkEvent)
     ed.on('BeforeExecCommand', function (e) {
-      if (e.command === 'Cut' || e.command === 'Delete' || e.command === 'Paste') {
+      if (['Cut', 'Delete', 'Paste'].includes(e.command)) {
         return preventDelete.checkEvent(e)
       }
       return true
