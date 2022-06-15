@@ -1,4 +1,13 @@
-(function(tinymce) {
+const plugin = (editor) => {
+  const preventDelete = new PreventDelete(editor);
+  editor.on('keydown', preventDelete.checkEvent);
+  editor.on('BeforeExecCommand', (e) => {
+    if (['Cut', 'Delete', 'Paste'].includes(e.command)) {
+      return preventDelete.checkEvent(e);
+    }
+    return true;
+  });
+
   // eslint-disable-next-line require-jsdoc
   function PreventDelete(editor) {
     const self = this;
@@ -430,21 +439,6 @@
       }
     };
   }
+};
 
-  tinymce.PluginManager.add('preventdelete', (ed, link) => {
-    const preventDelete = new PreventDelete(ed);
-    ed.on('keydown', preventDelete.checkEvent);
-    ed.on('BeforeExecCommand', (e) => {
-      if (['Cut', 'Delete', 'Paste'].includes(e.command)) {
-        return preventDelete.checkEvent(e);
-      }
-
-      return true;
-    });
-    /*
-    Ed.on('BeforeSetContent', function (e) {
-      return preventDelete.checkEvent(e)
-    })
-    */
-  });
-})(tinymce); // eslint-disable-line no-undef
+export default plugin;
