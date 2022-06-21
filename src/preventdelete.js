@@ -213,7 +213,7 @@ const plugin = (editor) => {
     };
 
     this.checkChildren = function(node) {
-      if (!node) {
+      if (!node || !node.querySelectorAll) {
         return false;
       }
 
@@ -287,38 +287,58 @@ const plugin = (editor) => {
       const back = evt.code && evt.code === 'Backspace';
       const del = evt.code && evt.code === 'Delete';
 
-      const noselection = range.collapsed;
+      const noselection = (range.startContainer === range.endContainer);
 
-      let conNoEdit;
+      let conNoEdit = false;
       if (!noselection) {
         // Ensure nothing in the span between elems is noneditable
-        for (let c = range.startContainer; !conNoEdit && c; c = c.nextSibling) {
-          conNoEdit = conNoEdit || self.check(c);
 
-          if (range.endContainer === c) {
+        const startParents = self.nodeParentArray(range.startContainer);
+        startParents.reverse();
+        if (startParents.length > 0 &&
+          startParents.lastIndexOf(range.commonAncestorContainer) > -1
+        ) {
+          let removedParent;
+          do {
+            removedParent = startParents.shift();
+          }
+          while (removedParent !== range.commonAncestorContainer);
+        }
+
+        const endParents = self.nodeParentArray(range.endContainer);
+        endParents.reverse();
+        if (endParents.length > 0 &&
+          endParents.lastIndexOf(range.commonAncestorContainer) > -1
+        ) {
+          let removedParent;
+          do {
+            removedParent = endParents.shift();
+          }
+          while (removedParent !== range.commonAncestorContainer);
+        }
+
+        for (
+          let part = startParents[0];
+          !conNoEdit && part;
+          part = part.nextSibling
+        ) {
+          const check = self.check(part) || self.checkChildren(part);
+          if (check) {
+            conNoEdit = check;
+          }
+
+          if (endParents[0] === part) {
             break;
           }
         }
+      }
 
-        const end = range.endContainer;
-        if (
-          end && range.endOffset === 0 &&
-          (self.check(end) || self.checkChildren(end) || self.checkParents(end))
-        ) {
-          if (logDebug) {
-            console.log('range.endContainer', range.endContainer);
-          }
-
-          return self.cancelKey(evt);
+      if (conNoEdit) {
+        if (logDebug) {
+          console.log('conNoEdit', conNoEdit);
         }
 
-        if (conNoEdit) {
-          if (logDebug) {
-            console.log('conNoEdit', conNoEdit);
-          }
-
-          return self.cancelKey(evt);
-        }
+        return self.cancelKey(evt);
       }
 
       const endData = (range.endContainer.data || '');
@@ -357,21 +377,6 @@ const plugin = (editor) => {
         ) {
           const elem = range.endContainer.childNodes[range.startOffset + 1];
           if (self.check(elem)) {
-            if (logDebug) {
-              console.log('');
-            }
-
-            return self.cancelKey(evt);
-          }
-
-          return true;
-        }
-
-        // The range is within this container
-        if (!range.collapsed) {
-          // If this container is non-editable, cancel the event,
-          // otherwise allow the event
-          if (conNoEdit) {
             if (logDebug) {
               console.log('');
             }
