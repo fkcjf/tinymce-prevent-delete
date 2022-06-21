@@ -183,15 +183,25 @@ const plugin = (editor) => {
       return classList.contains(preventDeleteClass);
     };
 
-    this.nodeParentArray = function(node) {
+    this.nodeParentArray = function(node, closestFirst, cutoff) {
+      closestFirst = Boolean(closestFirst);
+      cutoff = cutoff ?? null;
+
       const parents = [];
       if (Boolean(node) && Boolean(node.parentElement)) {
         let parent = node.parentElement;
         while (parent !== null) {
+          if (node === cutoff) {
+            break;
+          }
           parents.push(node);
           node = parent;
           parent = node.parentElement;
         }
+      }
+
+      if (!closestFirst) {
+        parents.reverse();
       }
 
       return parents;
@@ -293,29 +303,11 @@ const plugin = (editor) => {
       if (!noselection) {
         // Ensure nothing in the span between elems is noneditable
 
-        const startParents = self.nodeParentArray(range.startContainer);
-        startParents.reverse();
-        if (startParents.length > 0 &&
-          startParents.lastIndexOf(range.commonAncestorContainer) > -1
-        ) {
-          let removedParent;
-          do {
-            removedParent = startParents.shift();
-          }
-          while (removedParent !== range.commonAncestorContainer);
-        }
+        const startParents = self.nodeParentArray(
+            range.startContainer, false, range.commonAncestorContainer);
 
-        const endParents = self.nodeParentArray(range.endContainer);
-        endParents.reverse();
-        if (endParents.length > 0 &&
-          endParents.lastIndexOf(range.commonAncestorContainer) > -1
-        ) {
-          let removedParent;
-          do {
-            removedParent = endParents.shift();
-          }
-          while (removedParent !== range.commonAncestorContainer);
-        }
+        const endParents = self.nodeParentArray(
+            range.endContainer, false, range.commonAncestorContainer);
 
         for (
           let part = startParents[0];
