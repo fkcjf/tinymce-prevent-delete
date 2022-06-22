@@ -20,8 +20,10 @@ const plugin = (editor) => {
       Boolean(editor.getParam('preventdelete_lockChildren'));
     const lockParents =
       Boolean(editor.getParam('preventdelete_lockParents'));
-    const preventDeleteClass =
+    const nonEditableClass =
       editor.getParam('noneditable_class');
+    const editableClass =
+      editor.getParam('editable_class');
 
     const spaceCharCodes = [160, 32];
 
@@ -180,7 +182,7 @@ const plugin = (editor) => {
         return false;
       }
 
-      return classList.contains(preventDeleteClass);
+      return classList.contains(nonEditableClass);
     };
 
     this.nodeParentArray = function(node, closestFirst, stopAtParent) {
@@ -218,7 +220,7 @@ const plugin = (editor) => {
 
       const nodeParents = self.nodeParentArray(node);
       const filteredParents =
-        self.querySelectorFrom(`.${preventDeleteClass}`, nodeParents);
+        self.querySelectorFrom(`.${nonEditableClass}`, nodeParents);
       return (filteredParents.length > 0);
     };
 
@@ -227,7 +229,7 @@ const plugin = (editor) => {
         return false;
       }
 
-      const filteredChildren = node.querySelectorAll(`.${preventDeleteClass}`);
+      const filteredChildren = node.querySelectorAll(`.${nonEditableClass}`);
       return (filteredChildren.length > 0);
     };
 
@@ -414,10 +416,10 @@ const plugin = (editor) => {
 
         if (noselection) {
           if (typeof prev.prevObject[0].className !== 'undefined') {
-            if (prev.prevObject[0].className === 'mceEditable') {
+            if (prev.prevObject[0].className === editableClass) {
               if (logDebug) {
                 console.log(
-                    'range is empty, previous element has mceEditable class',
+                    'range is empty, previous element has editable class',
                 );
               }
 
