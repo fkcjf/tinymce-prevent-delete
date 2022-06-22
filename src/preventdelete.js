@@ -183,15 +183,15 @@ const plugin = (editor) => {
       return classList.contains(preventDeleteClass);
     };
 
-    this.nodeParentArray = function(node, closestFirst, cutoff) {
+    this.nodeParentArray = function(node, closestFirst, stopAtParent) {
       closestFirst = Boolean(closestFirst);
-      cutoff = cutoff ?? null;
+      stopAtParent = stopAtParent ?? null;
 
       const parents = [];
       if (Boolean(node) && Boolean(node.parentElement)) {
         let parent = node.parentElement;
         while (parent !== null) {
-          if (node === cutoff) {
+          if (node === stopAtParent) {
             break;
           }
           parents.push(node);
