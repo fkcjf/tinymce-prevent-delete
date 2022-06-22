@@ -412,7 +412,7 @@ const plugin = (editor) => {
           return self.cancelKey(evt);
         }
 
-        if (range.collapsed) {
+        if (noselection) {
           if (typeof prev.prevObject[0].className !== 'undefined') {
             if (prev.prevObject[0].className === 'mceEditable') {
               if (logDebug) {
